@@ -75,21 +75,21 @@ function safeItem(input) {
   };
 }
 const instructions = `Bạn là AI Agent quản lý công việc tiếng Việt trên điện thoại Android.
-Chỉ trích xuất điều thật sự có trong tin; không bịa người, ngày, địa điểm hay nhiệm vụ. Múi giờ Asia/Bangkok (UTC+7).
+Chỉ trích xuất điều thật sự có trong tin hoặc tài liệu; không bịa người, ngày, địa điểm hay nhiệm vụ. Múi giờ Asia/Bangkok (UTC+7).
 TASK: có hành động cần thực hiện. MEETING: có lịch làm việc và thời điểm đủ rõ. DEADLINE: nhấn mạnh hạn. NOTICE/INFO: chỉ thông báo/trao đổi.
 Nếu không có đầu việc rõ: taskTitle=null. Nếu không có lịch rõ: eventTitle=null và event*=null.
 Nếu vừa có việc vừa có lịch, có thể điền cả task và event. Phân loại workArea: DANG_UY, CHI_BO, THU_Y, TO_DAN_PHO, CA_NHAN, OTHER.
 Tóm tắt ngắn, giữ tên đơn vị/người nhận/hạn quan trọng. Trả đúng inboxId đầu vào cho từng phân tích.`;
 
 function privacyPolicy(res) {
-  const html = `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chính sách quyền riêng tư - AI Agent Công việc</title><style>body{font-family:system-ui,sans-serif;max-width:820px;margin:40px auto;padding:0 20px;line-height:1.65;color:#202124}h1,h2{line-height:1.25}small{color:#5f6368}</style></head><body><h1>Chính sách quyền riêng tư – AI Agent Công việc</h1><small>Cập nhật: 09/08/2026</small><p>AI Agent Công việc giúp người dùng tự quản lý công việc từ thông báo Zalo, tạo nhiệm vụ, nhắc hạn và đồng bộ sự kiện vào lịch trên thiết bị.</p><h2>Dữ liệu được xử lý</h2><ul><li>Nội dung thông báo Zalo mà Android cung cấp sau khi người dùng tự bật quyền truy cập thông báo, gồm tên nguồn, tiêu đề, nội dung và thời điểm.</li><li>Câu hỏi giọng nói sau khi dịch vụ nhận dạng giọng nói trên thiết bị chuyển thành văn bản.</li><li>Nhiệm vụ, thời hạn, sự kiện và thông tin lịch do người dùng tạo hoặc ứng dụng trích xuất.</li><li>Mã cài đặt ngẫu nhiên và mã xác thực thiết bị để bảo vệ kết nối backend.</li></ul><h2>Mục đích sử dụng</h2><p>Dữ liệu chỉ được dùng để phân tích và tóm tắt thông báo, tạo nhiệm vụ/sự kiện, trả lời câu hỏi về công việc, gửi lời nhắc và đồng bộ lịch theo lựa chọn của người dùng. Ứng dụng không bán dữ liệu và không dùng dữ liệu cho quảng cáo.</p><h2>Chia sẻ và truyền dữ liệu</h2><p>Khi cần phân tích AI, nội dung liên quan được truyền qua HTTPS đến backend của ứng dụng và nhà cung cấp dịch vụ AI OpenAI để xử lý. Dữ liệu lịch chỉ được ghi vào nhà cung cấp lịch trên thiết bị khi người dùng cấp quyền hoặc bật tự đồng bộ. Dữ liệu có thể được xử lý bởi nhà cung cấp hạ tầng cần thiết để vận hành backend.</p><h2>Lưu trữ và bảo mật</h2><p>Nhiệm vụ, sự kiện và hộp thư AI được lưu cục bộ trên thiết bị. Backend không chủ ý lưu nội dung thông báo sau khi hoàn tất yêu cầu và không ghi nội dung thông báo vào nhật ký. Token được bảo vệ bằng Android Keystore; dữ liệu được truyền bằng HTTPS; sao lưu đám mây mặc định của ứng dụng bị tắt.</p><h2>Quyền lựa chọn và xóa dữ liệu</h2><p>Người dùng có thể tắt quyền đọc thông báo, quyền thông báo hoặc quyền Lịch trong Cài đặt Android; tắt tự đồng bộ lịch trong ứng dụng; xóa từng mục; hoặc gỡ cài đặt để xóa dữ liệu cục bộ. Các sự kiện đã ghi vào Lịch cần được xóa trong ứng dụng Lịch tương ứng.</p><h2>Trẻ em</h2><p>Ứng dụng không hướng đến trẻ em dưới 13 tuổi.</p><h2>Liên hệ</h2><p>Email: <a href="mailto:banhat.co@gmail.com">banhat.co@gmail.com</a></p></body></html>`;
+  const html = `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chính sách quyền riêng tư - AI Agent Công việc</title><style>body{font-family:system-ui,sans-serif;max-width:820px;margin:40px auto;padding:0 20px;line-height:1.65;color:#202124}h1,h2{line-height:1.25}small{color:#5f6368}</style></head><body><h1>Chính sách quyền riêng tư – AI Agent Công việc</h1><small>Cập nhật: 09/08/2026</small><p>AI Agent Công việc giúp người dùng quản lý công việc từ thông báo, nội dung và tệp người dùng chủ động chia sẻ hoặc cấp quyền thư mục trên thiết bị.</p><h2>Dữ liệu được xử lý</h2><ul><li>Nội dung thông báo Zalo mà Android cung cấp sau khi người dùng bật quyền truy cập thông báo.</li><li>Tệp người dùng tải xuống, chia sẻ sang AI Agent hoặc đặt trong thư mục đã cấp quyền đọc cho ứng dụng.</li><li>Câu hỏi giọng nói sau khi được chuyển thành văn bản.</li><li>Nhiệm vụ, thời hạn, sự kiện và thông tin lịch do ứng dụng trích xuất.</li></ul><h2>Mục đích sử dụng</h2><p>Dữ liệu được dùng để phân tích, tóm tắt, tạo nhiệm vụ/sự kiện, nhắc hạn và lập báo cáo. Ứng dụng không bán dữ liệu và không dùng dữ liệu cho quảng cáo.</p><h2>Chia sẻ và truyền dữ liệu</h2><p>Khi cần phân tích AI, nội dung hoặc tệp liên quan được truyền qua HTTPS đến backend của ứng dụng và dịch vụ AI OpenAI để xử lý.</p><h2>Lưu trữ và bảo mật</h2><p>Dữ liệu công việc chính được lưu cục bộ trên thiết bị. Backend không chủ ý lưu nội dung sau khi hoàn tất yêu cầu. Token được bảo vệ bằng Android Keystore và dữ liệu được truyền bằng HTTPS.</p><h2>Quyền lựa chọn</h2><p>Người dùng có thể thu hồi quyền đọc thông báo, quyền thư mục hoặc quyền Lịch trong Android; xóa từng mục hoặc gỡ cài đặt ứng dụng.</p><h2>Liên hệ</h2><p>Email: <a href="mailto:banhat.co@gmail.com">banhat.co@gmail.com</a></p></body></html>`;
   res.writeHead(200, {"content-type":"text/html; charset=utf-8", "cache-control":"public, max-age=3600"});
   res.end(html);
 }
 
 const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && req.url === "/privacy") return privacyPolicy(res);
-  if (req.method === "GET" && req.url === "/health") return json(res, 200, {ok:true, version:"0.5.0", deviceRegistration:true});
+  if (req.method === "GET" && req.url === "/health") return json(res, 200, {ok:true, version:"0.9.0", deviceRegistration:true, fileAnalysis:true});
   if (req.method === "POST" && req.url === "/device/register") {
     if (!DEVICE_SIGNING_SECRET) return json(res, 503, {error:"device_signing_not_configured"});
     if (REGISTRATION_KEY && (req.headers["x-registration-key"] || "") !== REGISTRATION_KEY) return json(res, 403, {error:"registration_denied"});
@@ -99,17 +99,19 @@ const server = http.createServer(async (req, res) => {
     if (installId.length < 16 || installId.length > 120) return json(res, 400, {error:"invalid_install_id"});
     return json(res, 200, {token:issueDeviceToken(installId), expiresInDays:180});
   }
-  if (req.method !== "POST" || !["/analyze","/analyze-batch","/ask"].includes(req.url)) return json(res, 404, {error:"not_found"});
+  if (req.method !== "POST" || !["/analyze","/analyze-batch","/analyze-file","/ask"].includes(req.url)) return json(res, 404, {error:"not_found"});
   if (!authorized(req)) return json(res, 401, {error:"unauthorized"});
 
   let input;
-  try { input = await readJson(req); } catch (e) { return json(res, e.message === "payload_too_large" ? 413 : 400, {error:e.message}); }
+  try { input = await readJson(req, req.url === "/analyze-file" ? 15_000_000 : 150_000); }
+  catch (e) { return json(res, e.message === "payload_too_large" ? 413 : 400, {error:e.message}); }
+
   try {
     if (req.url === "/analyze") {
       const safe = safeItem(input);
       const response = await client.responses.create({
         model: MODEL, instructions, input: JSON.stringify(safe),
-        text: { format: { type: "json_schema", name: "android_ai_agent_item_v03", strict: true, schema: singleSchema } }
+        text: { format: { type: "json_schema", name: "android_ai_agent_item_v09", strict: true, schema: singleSchema } }
       });
       return json(res, 200, JSON.parse(response.output_text));
     }
@@ -121,9 +123,30 @@ const server = http.createServer(async (req, res) => {
         model: MODEL,
         instructions: instructions + `\nBạn đang nhận nhiều notification liên tiếp của CÙNG một nhóm Zalo. Hãy gom ý trùng nhau. groupSummary tối đa 4 câu; highlights chỉ chứa các việc/hạn/lịch đáng chú ý. analyses phải có đúng một phần tử cho mỗi input item, giữ đúng inboxId.`,
         input: JSON.stringify({groupTitle:String(input.groupTitle || "").slice(0,500), items}),
-        text: { format: { type: "json_schema", name: "android_ai_agent_batch_v03", strict: true, schema: batchSchema } }
+        text: { format: { type: "json_schema", name: "android_ai_agent_batch_v09", strict: true, schema: batchSchema } }
       });
       return json(res, 200, JSON.parse(response.output_text));
+    }
+
+    if (req.url === "/analyze-file") {
+      const inboxId = Number(input.inboxId || 0);
+      const filename = String(input.filename || "document").slice(0,240);
+      const mimeType = String(input.mimeType || "application/octet-stream").slice(0,120);
+      const fileData = String(input.fileData || "");
+      const groupTitle = String(input.groupTitle || "Tệp Zalo").slice(0,500);
+      if (!inboxId || !fileData || fileData.length > 14_500_000) return json(res, 400, {error:"invalid_file_input"});
+      const content = [{ type:"input_text", text:`Đọc kỹ tệp '${filename}' từ nguồn '${groupTitle}'. Tóm tắt nội dung phục vụ báo cáo; phát hiện chỉ đạo, đầu việc, người/đơn vị thực hiện, thời hạn, lịch họp và địa điểm nếu có. Chỉ lấy thông tin thật sự có trong tệp. inboxId=${inboxId}.` }];
+      if (mimeType.startsWith("image/")) content.push({ type:"input_image", image_url:`data:${mimeType};base64,${fileData}` });
+      else content.push({ type:"input_file", filename, file_data:fileData });
+      const response = await client.responses.create({
+        model: MODEL,
+        instructions,
+        input: [{ role:"user", content }],
+        text: { format: { type: "json_schema", name: "android_ai_agent_file_v09", strict: true, schema: singleSchema } }
+      });
+      const result = JSON.parse(response.output_text);
+      result.inboxId = inboxId;
+      return json(res, 200, result);
     }
 
     const tasks = Array.isArray(input.tasks) ? input.tasks.slice(0,40) : [];
@@ -133,7 +156,7 @@ const server = http.createServer(async (req, res) => {
       model: MODEL,
       instructions: `Bạn là trợ lý công việc tiếng Việt. Chỉ trả lời dựa trên danh sách task/event được cung cấp. Hiện tại là ${new Date(Number(input.now || Date.now())).toISOString()}, múi giờ Asia/Bangkok. Trả lời ngắn, ưu tiên việc gần hạn và lịch gần nhất. Nếu không có dữ liệu phù hợp, nói rõ.`,
       input: JSON.stringify({question, tasks, events}),
-      text: { format: { type: "json_schema", name: "android_ai_agent_ask_v03", strict: true, schema: askSchema } }
+      text: { format: { type: "json_schema", name: "android_ai_agent_ask_v09", strict: true, schema: askSchema } }
     });
     return json(res, 200, JSON.parse(response.output_text));
   } catch (e) {
@@ -141,4 +164,4 @@ const server = http.createServer(async (req, res) => {
     return json(res, 500, {error:"ai_request_failed"});
   }
 });
-server.listen(PORT, () => console.log(`AI Agent backend 0.5 listening on :${PORT}`));
+server.listen(PORT, () => console.log(`AI Agent backend 0.9 listening on :${PORT}`));
