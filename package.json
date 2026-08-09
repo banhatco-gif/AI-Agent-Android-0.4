@@ -1,0 +1,7 @@
+{
+  "name": "ai-agent-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {"start":"node server.mjs"},
+  "dependencies": {"openai":"^5.0.0"}
+}
