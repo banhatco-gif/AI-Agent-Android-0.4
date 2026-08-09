@@ -9,6 +9,8 @@ const MODEL = process.env.OPENAI_MODEL || "gpt-5-mini";
 const REGISTRATION_KEY = process.env.DEVICE_REGISTRATION_KEY || "";
 const DEVICE_SIGNING_SECRET = process.env.DEVICE_SIGNING_SECRET || AUTH_TOKEN || "";
 const TOKEN_TTL_MS = 180 * 24 * 60 * 60 * 1000;
+const ZALO_VERIFICATION_PATH = "/zalo_verifierV-Rd5e7JSJjazU4tflHRBYA4rGpEyWzNDZGp.html";
+const ZALO_VERIFICATION_TOKEN = "V-Rd5e7JSJjazU4tflHRBYA4rGpEyWzNDZGp";
 
 const itemProperties = {
   inboxId: { type: "integer" },
@@ -81,6 +83,12 @@ Nếu không có đầu việc rõ: taskTitle=null. Nếu không có lịch rõ:
 Nếu vừa có việc vừa có lịch, có thể điền cả task và event. Phân loại workArea: DANG_UY, CHI_BO, THU_Y, TO_DAN_PHO, CA_NHAN, OTHER.
 Tóm tắt ngắn, giữ tên đơn vị/người nhận/hạn quan trọng. Trả đúng inboxId đầu vào cho từng phân tích.`;
 
+function zaloVerification(res) {
+  const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="zalo-platform-site-verification" content="${ZALO_VERIFICATION_TOKEN}"></head><body>zalo-platform-site-verification = ${ZALO_VERIFICATION_TOKEN}</body></html>`;
+  res.writeHead(200, {"content-type":"text/html; charset=utf-8", "cache-control":"no-store"});
+  res.end(html);
+}
+
 function privacyPolicy(res) {
   const html = `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chính sách quyền riêng tư - AI Agent Công việc</title><style>body{font-family:system-ui,sans-serif;max-width:820px;margin:40px auto;padding:0 20px;line-height:1.65;color:#202124}h1,h2{line-height:1.25}small{color:#5f6368}</style></head><body><h1>Chính sách quyền riêng tư – AI Agent Công việc</h1><small>Cập nhật: 09/08/2026</small><p>AI Agent Công việc giúp người dùng quản lý công việc từ thông báo, nội dung và tệp người dùng chủ động chia sẻ hoặc cấp quyền thư mục trên thiết bị.</p><h2>Dữ liệu được xử lý</h2><ul><li>Nội dung thông báo Zalo mà Android cung cấp sau khi người dùng bật quyền truy cập thông báo.</li><li>Tệp người dùng tải xuống, chia sẻ sang AI Agent hoặc đặt trong thư mục đã cấp quyền đọc cho ứng dụng.</li><li>Câu hỏi giọng nói sau khi được chuyển thành văn bản.</li><li>Nhiệm vụ, thời hạn, sự kiện và thông tin lịch do ứng dụng trích xuất.</li></ul><h2>Mục đích sử dụng</h2><p>Dữ liệu được dùng để phân tích, tóm tắt, tạo nhiệm vụ/sự kiện, nhắc hạn và lập báo cáo. Ứng dụng không bán dữ liệu và không dùng dữ liệu cho quảng cáo.</p><h2>Chia sẻ và truyền dữ liệu</h2><p>Khi cần phân tích AI, nội dung hoặc tệp liên quan được truyền qua HTTPS đến backend của ứng dụng và dịch vụ AI OpenAI để xử lý.</p><h2>Lưu trữ và bảo mật</h2><p>Dữ liệu công việc chính được lưu cục bộ trên thiết bị. Backend không chủ ý lưu nội dung sau khi hoàn tất yêu cầu. Token được bảo vệ bằng Android Keystore và dữ liệu được truyền bằng HTTPS.</p><h2>Quyền lựa chọn</h2><p>Người dùng có thể thu hồi quyền đọc thông báo, quyền thư mục hoặc quyền Lịch trong Android; xóa từng mục hoặc gỡ cài đặt ứng dụng.</p><h2>Liên hệ</h2><p>Email: <a href="mailto:banhat.co@gmail.com">banhat.co@gmail.com</a></p></body></html>`;
   res.writeHead(200, {"content-type":"text/html; charset=utf-8", "cache-control":"public, max-age=3600"});
@@ -88,6 +96,7 @@ function privacyPolicy(res) {
 }
 
 const server = http.createServer(async (req, res) => {
+  if (req.method === "GET" && req.url === ZALO_VERIFICATION_PATH) return zaloVerification(res);
   if (req.method === "GET" && req.url === "/privacy") return privacyPolicy(res);
   if (req.method === "GET" && req.url === "/health") return json(res, 200, {ok:true, version:"0.9.0", deviceRegistration:true, fileAnalysis:true});
   if (req.method === "POST" && req.url === "/device/register") {
