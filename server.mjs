@@ -11,6 +11,8 @@ const DEVICE_SIGNING_SECRET = process.env.DEVICE_SIGNING_SECRET || AUTH_TOKEN ||
 const TOKEN_TTL_MS = 180 * 24 * 60 * 60 * 1000;
 const ZALO_VERIFICATION_PATH = "/zalo_verifierV-Rd5e7JSJjazU4tflHRBYA4rGpEyWzNDZGp.html";
 const ZALO_VERIFICATION_TOKEN = "V-Rd5e7JSJjazU4tflHRBYA4rGpEyWzNDZGp";
+const ZALO_APP_ID = process.env.ZALO_APP_ID || "3017784749195688493";
+const ZALO_OA_SECRET_KEY = process.env.ZALO_OA_SECRET_KEY || "";
 
 const itemProperties = {
   inboxId: { type: "integer" },
@@ -64,10 +66,35 @@ function authorized(req) {
   if (AUTH_TOKEN && raw === AUTH_TOKEN) return true;
   return verifyDeviceToken(raw);
 }
-async function readJson(req, max = 150_000) {
+async function readRaw(req, max = 150_000) {
   let raw = "";
-  for await (const chunk of req) { raw += chunk; if (raw.length > max) throw new Error("payload_too_large"); }
+  for await (const chunk of req) {
+    raw += chunk;
+    if (raw.length > max) throw new Error("payload_too_large");
+  }
+  return raw;
+}
+async function readJson(req, max = 150_000) {
+  const raw = await readRaw(req, max);
   return JSON.parse(raw || "{}");
+}
+function timingSafeTextEqual(left, right) {
+  const a = Buffer.from(String(left));
+  const b = Buffer.from(String(right));
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+function verifyZaloWebhook(raw, payload, signatureHeader) {
+  if (!ZALO_OA_SECRET_KEY) return { configured:false, valid:false };
+  const appId = String(payload.app_id || "");
+  const timestamp = String(payload.timestamp || "");
+  if (!appId || !timestamp || (ZALO_APP_ID && appId !== ZALO_APP_ID)) {
+    return { configured:true, valid:false };
+  }
+  const expected = crypto.createHash("sha256")
+    .update(appId + raw + timestamp + ZALO_OA_SECRET_KEY)
+    .digest("hex");
+  const received = String(signatureHeader || "").replace(/^mac\s*=\s*/i, "").trim();
+  return { configured:true, valid:timingSafeTextEqual(received, expected) };
 }
 function safeItem(input) {
   return {
@@ -98,7 +125,25 @@ function privacyPolicy(res) {
 const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && req.url === ZALO_VERIFICATION_PATH) return zaloVerification(res);
   if (req.method === "GET" && req.url === "/privacy") return privacyPolicy(res);
-  if (req.method === "GET" && req.url === "/health") return json(res, 200, {ok:true, version:"0.9.0", deviceRegistration:true, fileAnalysis:true});
+  if (req.method === "GET" && req.url === "/health") return json(res, 200, {ok:true, version:"0.9.0", deviceRegistration:true, fileAnalysis:true, zaloWebhook:true, zaloSignatureConfigured:Boolean(ZALO_OA_SECRET_KEY)});
+  if (req.method === "GET" && req.url === "/zalo/webhook") return json(res, 200, {ok:true, endpoint:"zalo_webhook", signatureConfigured:Boolean(ZALO_OA_SECRET_KEY)});
+  if (req.method === "POST" && req.url === "/zalo/webhook") {
+    let raw;
+    try { raw = await readRaw(req, 1_000_000); }
+    catch (e) { return json(res, e.message === "payload_too_large" ? 413 : 400, {error:e.message}); }
+    if (!raw.trim()) return json(res, 200, {ok:true, validation:true});
+    let event;
+    try { event = JSON.parse(raw); }
+    catch { return json(res, 400, {error:"invalid_json"}); }
+    const verification = verifyZaloWebhook(raw, event, req.headers["x-zevent-signature"]);
+    if (!verification.configured) {
+      console.warn("zalo_webhook_ignored", String(event.event_name || "unknown").slice(0,100), "signature_not_configured");
+      return json(res, 200, {ok:true, accepted:false, reason:"signature_not_configured"});
+    }
+    if (!verification.valid) return json(res, 401, {error:"invalid_signature"});
+    console.log("zalo_webhook_received", String(event.event_name || "unknown").slice(0,100), String(event.timestamp || "").slice(0,30));
+    return json(res, 200, {ok:true, accepted:true});
+  }
   if (req.method === "POST" && req.url === "/device/register") {
     if (!DEVICE_SIGNING_SECRET) return json(res, 503, {error:"device_signing_not_configured"});
     if (REGISTRATION_KEY && (req.headers["x-registration-key"] || "") !== REGISTRATION_KEY) return json(res, 403, {error:"registration_denied"});
